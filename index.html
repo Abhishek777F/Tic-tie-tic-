@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Luxury Tic-Tac-Toe Royale Ultimate</title>
 
-<link rel="manifest" href="./manifest.js">
+<link rel="manifest" href="./manifest.json">
   
     <style>
         /* ==========================================================================
@@ -1189,6 +1189,201 @@
         });
     }
   </script>
+
+<!-- PWA INSTALL POPUP -->
+<div id="installPopup" class="install-popup">
+    <div class="install-card">
+        <img
+    class="install-icon"
+    src="./icon-192.png"
+    alt="Tic-Tac-Toe Royale"
+>
+
+        <h2>Install Tic-Tac-Toe Royale</h2>
+
+        <p>
+            Install the game on your phone for a faster,
+            full-screen gaming experience.
+        </p>
+
+        <div class="install-buttons">
+            <button id="installBtn" class="install-btn">
+                📲 Install App
+            </button>
+
+            <button id="installCloseBtn" class="install-close">
+                Not Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.install-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    padding: 18px;
+}
+
+.install-popup.show {
+    display: flex;
+}
+
+.install-card {
+    width: 100%;
+    max-width: 430px;
+    background: linear-gradient(
+        145deg,
+        #2b1710,
+        #120a07
+    );
+    border: 1px solid rgba(212, 175, 55, 0.55);
+    border-radius: 24px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.7),
+        0 0 30px rgba(212,175,55,.12);
+    animation: installSlideUp .35s ease;
+}
+
+.install-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg,#d4af37,#8f6b16);
+    color: #120a07;
+    font-size: 32px;
+    font-weight: 900;
+    box-shadow: 0 8px 25px rgba(212,175,55,.25);
+}
+
+.install-card h2 {
+    margin: 0 0 10px;
+    color: #f5d978;
+    font-size: 21px;
+}
+
+.install-card p {
+    margin: 0 auto 20px;
+    max-width: 340px;
+    color: #d8cfc8;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.install-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.install-btn {
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    padding: 14px;
+    background: linear-gradient(135deg,#d4af37,#a77b18);
+    color: #120a07;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.install-close {
+    width: 100%;
+    border: 1px solid rgba(212,175,55,.3);
+    border-radius: 14px;
+    padding: 12px;
+    background: transparent;
+    color: #cfc5bd;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+@keyframes installSlideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+</style>
+
+<script>
+let deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (event) => {
+
+    // Stop Chrome from showing its own automatic prompt
+    event.preventDefault();
+
+    // Save the install event
+    deferredInstallPrompt = event;
+
+    // Show our custom popup
+    setTimeout(() => {
+        document
+            .getElementById("installPopup")
+            .classList.add("show");
+    }, 1500);
+});
+
+document
+    .getElementById("installBtn")
+    .addEventListener("click", async () => {
+
+        if (!deferredInstallPrompt) {
+            return;
+        }
+
+        // Show native Android installation dialog
+        deferredInstallPrompt.prompt();
+
+        const result = await deferredInstallPrompt.userChoice;
+
+        console.log("Install result:", result.outcome);
+
+        deferredInstallPrompt = null;
+
+        document
+            .getElementById("installPopup")
+            .classList.remove("show");
+    });
+
+document
+    .getElementById("installCloseBtn")
+    .addEventListener("click", () => {
+
+        document
+            .getElementById("installPopup")
+            .classList.remove("show");
+    });
+
+window.addEventListener("appinstalled", () => {
+
+    deferredInstallPrompt = null;
+
+    document
+        .getElementById("installPopup")
+        .classList.remove("show");
+
+    console.log("✅ Tic-Tac-Toe Royale installed");
+});
+</script>
   
 </body>
 </html>
