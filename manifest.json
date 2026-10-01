@@ -1,0 +1,29 @@
+{
+  "name": "Luxury Tic-Tac-Toe Royale Ultimate",
+  "short_name": "Tic-Tac-Toe Royale",
+  "description": "Luxury 2, 3 and 4 player Tic-Tac-Toe game.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#120A07",
+  "theme_color": "#D4AF37",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

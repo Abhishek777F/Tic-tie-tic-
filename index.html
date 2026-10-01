@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Luxury Tic-Tac-Toe Royale Ultimate</title>
+
+<link rel="manifest" href="./manifest.js">
+  
+    <style>
+        /* ==========================================================================
+           1. CORE & THEME DESIGN SYSTEM
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Default Theme: Luxury Dark Wood */
+        :root {
+            --bg-dark: #120A07;
+            --bg-wood-dark: #1F0D07;
+            --bg-wood-mid: #3A1B0E;
+            --wood-board: #2B1309;
+            --wood-panel: #4A2413;
+            --gold-accent: #D4AF37;
+            --gold-light: #F3E5AB;
+            --gold-shadow: rgba(212, 175, 55, 0.3);
+            --text-light: #FFF8EE;
+            --text-muted: #C5A880;
+            --cell-bg: rgba(45, 20, 10, 0.85);
+            --cell-hover: rgba(75, 35, 18, 0.95);
+            --p1-color: #FF5252;
+            --p2-color: #448AFF;
+            --p3-color: #69F0AE;
+            --p4-color: #FFD740;
+            --theme-border: rgba(212, 175, 55, 0.35);
+        }
+
+        /* Cyberpunk Neon Theme */
+        body.theme-cyberpunk {
+            --bg-dark: #05050D;
+            --bg-wood-dark: #0A0A1F;
+            --bg-wood-mid: #12123B;
+            --wood-board: #08081A;
+            --wood-panel: #181842;
+            --gold-accent: #00E5FF;
+            --gold-light: #80D8FF;
+            --gold-shadow: rgba(0, 229, 255, 0.4);
+            --text-light: #E0F7FA;
+            --text-muted: #80DEEA;
+            --cell-bg: rgba(10, 20, 45, 0.85);
+            --cell-hover: rgba(20, 40, 80, 0.95);
+            --p1-color: #FF0055;
+            --p2-color: #00F0FF;
+            --p3-color: #39FF14;
+            --p4-color: #FFE600;
+            --theme-border: rgba(0, 229, 255, 0.4);
+        }
+
+        /* Imperial Marble Theme */
+        body.theme-marble {
+            --bg-dark: #141619;
+            --bg-wood-dark: #1E2228;
+            --bg-wood-mid: #2C323B;
+            --wood-board: #181C22;
+            --wood-panel: #343B46;
+            --gold-accent: #E5C158;
+            --gold-light: #FFF1C5;
+            --gold-shadow: rgba(229, 193, 88, 0.3);
+            --text-light: #F0F4F8;
+            --text-muted: #9AA5B1;
+            --cell-bg: rgba(30, 36, 44, 0.9);
+            --cell-hover: rgba(50, 60, 72, 0.95);
+            --p1-color: #E63946;
+            --p2-color: #457B9D;
+            --p3-color: #2A9D8F;
+            --p4-color: #E9C46A;
+            --theme-border: rgba(229, 193, 88, 0.35);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 30%, var(--bg-wood-mid) 0%, var(--bg-dark) 100%),
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 1px, transparent 1px, transparent 3px);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100vw;
+            transition: background 0.4s ease;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 940px;
+            position: relative;
+            background: linear-gradient(180deg, var(--bg-wood-mid) 0%, var(--bg-wood-dark) 100%);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px var(--gold-shadow), inset 0 0 1px var(--gold-accent);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--theme-border);
+            transition: all 0.3s ease;
+        }
+
+        @media (min-height: 700px) and (min-width: 520px) {
+            .app-container {
+                height: 94vh;
+                border-radius: 24px;
+            }
+        }
+
+        /* ==========================================================================
+           2. SCREENS & NAVIGATION
+           ========================================================================== */
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 16px;
+            overflow-y: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-sizing: border-box;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .screen-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        /* ==========================================================================
+           3. UI CONTROLS & CARDS
+           ========================================================================== */
+        .btn-wood {
+            background: linear-gradient(180deg, var(--bg-wood-mid) 0%, var(--wood-board) 100%);
+            color: var(--gold-light);
+            border: 1px solid var(--gold-accent);
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-wood:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .btn-wood.btn-secondary {
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%);
+            border-color: rgba(255,255,255,0.2);
+            color: var(--text-muted);
+        }
+
+        .btn-wood.btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            margin-bottom: 0;
+            border-radius: 8px;
+        }
+
+        .wood-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--theme-border);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(8px);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4);
+        }
+
+        .wood-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--theme-border);
+            border-radius: 10px;
+            padding: 10px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+            margin-top: 4px;
+        }
+
+        .wood-input:focus {
+            border-color: var(--gold-accent);
+            box-shadow: 0 0 8px var(--gold-shadow);
+        }
+
+        .symbol-input {
+            width: 48px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .segmented-control {
+            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--theme-border);
+            border-radius: 10px;
+            padding: 3px;
+            gap: 4px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+
+        .segment-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .segment-btn.active {
+            background: linear-gradient(180deg, var(--gold-accent) 0%, rgba(0,0,0,0.2) 100%);
+            color: #FFF;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        /* Power-Up Buttons Bar */
+        .powerup-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-powerup {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--gold-accent);
+            border-radius: 10px;
+            padding: 6px 12px;
+            color: var(--gold-light);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn-powerup.selected {
+            background: var(--gold-accent);
+            color: #000;
+            box-shadow: 0 0 10px var(--gold-shadow);
+        }
+
+        /* ==========================================================================
+           4. GAME BOARD & ANIMATIONS
+           ========================================================================== */
+        .game-status-panel {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--theme-border);
+            border-radius: 14px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .turn-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .player-color-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.6);
+            flex-shrink: 0;
+        }
+
+        .board-container {
+            width: 100%;
+            aspect-ratio: 1;
+            max-width: 440px;
+            margin: 4px auto;
+            background: var(--wood-board);
+            border: 4px solid var(--wood-panel);
+            border-radius: 18px;
+            padding: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 10px 20px rgba(0,0,0,0.6);
+            display: grid;
+            gap: 6px;
+        }
+
+        .board-container.grid-3x3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+        .board-container.grid-4x4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); }
+        .board-container.grid-5x5 { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); }
+
+        .board-cell {
+            background: var(--cell-bg);
+            border: 1px solid var(--theme-border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+            transition: all 0.15s ease;
+        }
+
+        .grid-3x3 .board-cell { font-size: 2.8rem; }
+        .grid-4x4 .board-cell { font-size: 2.1rem; }
+        .grid-5x5 .board-cell { font-size: 1.6rem; }
+
+        .board-cell:active { transform: scale(0.95); background: var(--cell-hover); }
+
+        .board-cell.winning-cell {
+            animation: winGlow 1.2s infinite alternate;
+            background: linear-gradient(135deg, var(--gold-accent) 0%, rgba(0,0,0,0.8) 100%);
+            border-color: #FFF;
+            color: #FFF !important;
+        }
+
+        .board-cell.frozen {
+            background: rgba(0, 229, 255, 0.2);
+            border-color: #00E5FF;
+            pointer-events: none;
+        }
+
+        .players-summary {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--theme-border);
+            border-radius: 12px;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .player-summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            opacity: 0.4;
+            transition: all 0.25s ease;
+        }
+
+        .player-summary-item.active-turn { opacity: 1; transform: scale(1.08); }
+
+        /* Overlays & Modals */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+
+        .overlay.active { display: flex; }
+
+        .modal-card {
+            background: linear-gradient(180deg, var(--bg-wood-mid) 0%, var(--bg-wood-dark) 100%);
+            border: 2px solid var(--gold-accent);
+            border-radius: 20px;
+            padding: 22px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 20px var(--gold-shadow);
+            animation: modalPop 0.25s ease-out;
+        }
+
+        /* Toasts */
+        #toast-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+            width: 85%;
+            max-width: 380px;
+        }
+
+        .toast {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--gold-light);
+            border: 1px solid var(--gold-accent);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+        }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        @keyframes winGlow { 0% { box-shadow: 0 0 5px var(--gold-accent); } 100% { box-shadow: 0 0 20px var(--gold-accent), 0 0 30px #FFF; } }
+        @keyframes modalPop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes toastOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-20px); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <!-- Winner Modal Overlay -->
+        <div id="winner-overlay" class="overlay">
+            <div class="modal-card">
+                <div id="winner-icon" style="font-size: 3.5rem; margin-bottom: 8px;">👑</div>
+                <div id="winner-title" style="font-size: 1.6rem; font-weight: 800; color: var(--gold-light); margin-bottom: 4px;">VICTORY!</div>
+                <div id="winner-subtitle" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">3 IN A ROW!</div>
+                <button class="btn-wood" onclick="app.game.restart()">🔄 PLAY AGAIN</button>
+                <button class="btn-wood btn-secondary" onclick="app.nav.show('screen-home')">🏠 MAIN MENU</button>
+            </div>
+        </div>
+
+        <!-- 1. SPLASH SCREEN -->
+        <div id="screen-splash" class="screen active" style="justify-content: center; align-items: center; text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 10px; filter: drop-shadow(0 0 15px var(--gold-accent)); animation: pulse 2.5s infinite ease-in-out;">👑</div>
+            <div style="font-size: 2.2rem; font-weight: 800; letter-spacing: 2px; color: var(--gold-light);">ABHISHEK 777</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); letter-spacing: 2px; margin-bottom: 30px;">ROYALE ULTIMATE</div>
+            <div style="width: 200px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; border: 1px solid var(--theme-border); overflow: hidden;">
+                <div id="splash-loader-fill" style="height: 100%; width: 0%; background: var(--gold-accent); transition: width 1.8s ease-in-out;"></div>
+            </div>
+        </div>
+
+        <!-- 2. HOME SCREEN -->
+        <div id="screen-home" class="screen">
+            <div style="text-align: center; margin: 15px 0 15px 0;">
+                <div style="font-size: 2.2rem; filter: drop-shadow(0 0 10px var(--gold-accent));">👑</div>
+                <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--gold-light);">ABHISHEK 777</h1>
+                <div style="font-size: 0.75rem; color: var(--gold-light); letter-spacing: 2px;">ROYALE ULTIMATE</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; justify-content: center;">
+                <button class="btn-wood" onclick="app.setupMode('VS_AI')">🤖 SINGLE PLAYER (VS AI)</button>
+                <button class="btn-wood" onclick="app.setupMode('2PLAYER')">⚔️️ 2 PLAYER LOCAL (1v1)</button>
+                <button class="btn-wood" onclick="app.setupMode('3PLAYER')">👥 3 PLAYER BATTLE (3x3 / 4x4)</button>
+                <button class="btn-wood" onclick="app.setupMode('4PLAYER')">👑👥 4 PLAYER ROYALE (5x5)</button>
+                <button class="btn-wood btn-secondary" onclick="app.nav.show('screen-stats')">📊 STATS & LEADERBOARD</button>
+                <button class="btn-wood btn-secondary" onclick="app.nav.show('screen-settings')">⚙️ THEMES & SETTINGS</button>
+            </div>
+        </div>
+
+        <!-- 3. SETUP SCREEN -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-header">
+                <button class="btn-wood btn-small" onclick="app.nav.show('screen-home')"> Back</button>
+                <div class="screen-title" id="setup-title">SETUP GAME</div>
+                <div style="width: 50px;"></div>
+            </div>
+
+            <div class="wood-card" style="flex-grow: 1; overflow-y: auto;">
+                <div id="ai-difficulty-container" style="display: none;">
+                    <label style="color: var(--gold-light); font-weight: 700; font-size: 0.85rem;">AI DIFFICULTY:</label>
+                    <div class="segmented-control">
+                        <button class="segment-btn active" onclick="app.setAIDifficulty('EASY', this)">EASY</button>
+                        <button class="segment-btn" onclick="app.setAIDifficulty('MEDIUM', this)">MEDIUM</button>
+                        <button class="segment-btn" onclick="app.setAIDifficulty('HARD', this)">HARD</button>
+                    </div>
+                </div>
+
+                <div id="grid-size-container">
+                    <label style="color: var(--gold-light); font-weight: 700; font-size: 0.85rem;">GRID BOARD SIZE:</label>
+                    <div class="segmented-control">
+                        <button id="grid-btn-3" class="segment-btn active" onclick="app.setGridSize(3, this)">3x3</button>
+                        <button id="grid-btn-4" class="segment-btn" onclick="app.setGridSize(4, this)">4x4</button>
+                        <button id="grid-btn-5" class="segment-btn" onclick="app.setGridSize(5, this)">5x5</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label style="color: var(--gold-light); font-weight: 700; font-size: 0.85rem;">POWER-UPS MODE:</label>
+                    <div class="segmented-control">
+                        <button id="powerup-btn-off" class="segment-btn active" onclick="app.setPowerUps(false, this)">OFF</button>
+                        <button id="powerup-btn-on" class="segment-btn" onclick="app.setPowerUps(true, this)">ON (💣❄️⚡)</button>
+                    </div>
+                </div>
+
+                <div id="player-inputs-container" style="margin-top: 10px;"></div>
+            </div>
+
+            <button class="btn-wood" onclick="app.game.startLocal()">🚀 START GAME</button>
+        </div>
+
+        <!-- 4. GAME BOARD SCREEN -->
+        <div id="screen-game" class="screen" style="justify-content: space-between;">
+            <div class="screen-header" style="margin-bottom: 6px;">
+                <button class="btn-wood btn-small" onclick="app.nav.show('screen-home')">🚪 Leave</button>
+                <div class="screen-title" id="game-mode-tag" style="font-size: 0.85rem;">3x3 CLASSIC</div>
+                <button class="btn-wood btn-small" onclick="app.game.undoMove()">↩️ Undo</button>
+            </div>
+
+            <div class="game-status-panel">
+                <div class="turn-indicator">
+                    <span id="turn-badge" class="player-color-badge" style="background: var(--p1-color);">X</span>
+                    <span id="turn-text">Player 1's Turn</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);" id="move-counter">Moves: 0</div>
+            </div>
+
+            <div id="board" class="board-container grid-3x3"></div>
+
+            <div id="powerups-wrapper" class="powerup-bar" style="display: none;">
+                <button class="btn-powerup" onclick="app.game.selectPowerUp('BOMB', this)">💣 Bomb</button>
+                <button class="btn-powerup" onclick="app.game.selectPowerUp('FREEZE', this)">❄️️ Freeze</button>
+            </div>
+
+            <div id="players-summary" class="players-summary"></div>
+        </div>
+
+        <!-- 5. STATS & LEADERBOARD SCREEN -->
+        <div id="screen-stats" class="screen">
+            <div class="screen-header">
+                <button class="btn-wood btn-small" onclick="app.nav.show('screen-home')"> Back</button>
+                <div class="screen-title">GAME STATS</div>
+                <div style="width: 50px;"></div>
+            </div>
+
+            <div class="wood-card" style="flex-grow: 1; overflow-y: auto;">
+                <h3 style="color: var(--gold-light); margin-bottom: 10px;">🏆 Overall Match History</h3>
+                <div id="stats-container" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-muted);">
+                    Total Games Played: <strong id="stat-total" style="color:#FFF;">0</strong><br>
+                    Player 1 Wins: <strong id="stat-p1" style="color:var(--p1-color);">0</strong><br>
+                    Player 2 / AI Wins: <strong id="stat-p2" style="color:var(--p2-color);">0</strong><br>
+                    Draws: <strong id="stat-draws" style="color:var(--gold-light);">0</strong><br>
+                    Current Win Streak: <strong id="stat-streak" style="color:#69F0AE;">0</strong>
+                </div>
+                <button class="btn-wood btn-secondary" style="margin-top: 15px;" onclick="app.resetStats()">🧹 Reset Stats</button>
+            </div>
+        </div>
+
+        <!-- 6. SETTINGS & THEMES SCREEN -->
+        <div id="screen-settings" class="screen">
+            <div class="screen-header">
+                <button class="btn-wood btn-small" onclick="app.nav.show('screen-home')"> Back</button>
+                <div class="screen-title">SETTINGS</div>
+                <div style="width: 50px;"></div>
+            </div>
+
+            <div class="wood-card" style="flex-grow: 1;">
+                <h3 style="color: var(--gold-light); margin-bottom: 8px;">🎨 VISUAL THEME</h3>
+                <div class="segmented-control" style="flex-direction: column;">
+                    <button class="segment-btn active" onclick="app.setTheme('default', this)">🪵 Luxury Dark Wood</button>
+                    <button class="segment-btn" onclick="app.setTheme('cyberpunk', this)">⚡ Cyberpunk Neon</button>
+                    <button class="segment-btn" onclick="app.setTheme('marble', this)">🏛 Imperial Marble & Gold</button>
+                </div>
+
+                <h3 style="color: var(--gold-light); margin-top: 15px; margin-bottom: 8px;">🔊 SOUND EFFECTS</h3>
+                <div class="segmented-control">
+                    <button id="sound-btn-on" class="segment-btn active" onclick="app.toggleSound(true, this)">ON</button>
+                    <button id="sound-btn-off" class="segment-btn" onclick="app.toggleSound(false, this)">OFF</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ==========================================================================
+           MAIN APPLICATION CORE
+           ========================================================================== */
+        const DEFAULT_CONFIGS = [
+            { id: 0, name: "Player 1", symbol: "X", color: "var(--p1-color)" },
+            { id: 1, name: "Player 2", symbol: "O", color: "var(--p2-color)" },
+            { id: 2, name: "Player 3", symbol: "A", color: "var(--p3-color)" },
+            { id: 3, name: "Player 4", symbol: "B", color: "var(--p4-color)" }
+        ];
+
+        const app = {
+            mode: "2PLAYER",
+            aiDifficulty: "MEDIUM",
+            gridSize: 3,
+            powerUpsEnabled: false,
+            soundEnabled: true,
+            localPlayers: [],
+            audioCtx: null,
+            activePowerUp: null,
+
+            stats: { total: 0, p1Wins: 0, p2Wins: 0, draws: 0, streak: 0 },
+
+            init() {
+                this.nav.init();
+                this.loadStats();
+
+                setTimeout(() => {
+                    const fill = document.getElementById('splash-loader-fill');
+                    if (fill) fill.style.width = '100%';
+                }, 100);
+
+                setTimeout(() => { this.nav.show('screen-home'); }, 1900);
+            },
+
+            nav: {
+                current: 'screen-splash',
+                init() {
+                    window.addEventListener('popstate', () => {
+                        if (app.nav.current !== 'screen-home') app.nav.show('screen-home');
+                    });
+                    history.pushState({ screen: 'home' }, '');
+                },
+                show(screenId) {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    const target = document.getElementById(screenId);
+                    if (target) {
+                        target.classList.add('active');
+                        app.nav.current = screenId;
+                    }
+                }
+            },
+
+            toast(msg) {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = msg;
+                container.appendChild(toast);
+                setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
+            },
+
+            sound(type = 'click') {
+                if (!app.soundEnabled) return;
+                try {
+                    if (!app.audioCtx) app.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = app.audioCtx.createOscillator();
+                    const gain = app.audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(app.audioCtx.destination);
+
+                    if (type === 'click') {
+                        osc.frequency.setValueAtTime(450, app.audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.08, app.audioCtx.currentTime);
+                        osc.start(); osc.stop(app.audioCtx.currentTime + 0.05);
+                    } else if (type === 'win') {
+                        osc.frequency.setValueAtTime(523.25, app.audioCtx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(659.25, app.audioCtx.currentTime + 0.3);
+                        gain.gain.setValueAtTime(0.15, app.audioCtx.currentTime);
+                        osc.start(); osc.stop(app.audioCtx.currentTime + 0.3);
+                    } else if (type === 'powerup') {
+                        osc.frequency.setValueAtTime(200, app.audioCtx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(800, app.audioCtx.currentTime + 0.2);
+                        gain.gain.setValueAtTime(0.12, app.audioCtx.currentTime);
+                        osc.start(); osc.stop(app.audioCtx.currentTime + 0.2);
+                    }
+                } catch(e) {}
+            },
+
+            setTheme(themeName, btn) {
+                document.body.className = '';
+                if (themeName !== 'default') document.body.classList.add(`theme-${themeName}`);
+                btn.parentNode.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                app.toast(`Theme set to ${themeName.toUpperCase()}`);
+            },
+
+            toggleSound(enabled, btn) {
+                app.soundEnabled = enabled;
+                btn.parentNode.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            },
+
+            setAIDifficulty(diff, btn) {
+                app.aiDifficulty = diff;
+                btn.parentNode.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            },
+
+            setGridSize(size, btn) {
+                app.gridSize = size;
+                btn.parentNode.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            },
+
+            setPowerUps(enabled, btn) {
+                app.powerUpsEnabled = enabled;
+                btn.parentNode.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            },
+
+            setupMode(mode) {
+                app.mode = mode;
+                const container = document.getElementById('player-inputs-container');
+                const aiContainer = document.getElementById('ai-difficulty-container');
+                const gridContainer = document.getElementById('grid-size-container');
+                
+                container.innerHTML = '';
+
+                if (mode === 'VS_AI') {
+                    aiContainer.style.display = 'block';
+                    gridContainer.style.display = 'block';
+                    app.gridSize = 3;
+                    document.getElementById('setup-title').textContent = "VS AI SETUP";
+                    app.localPlayers = [
+                        { ...DEFAULT_CONFIGS[0], name: "You" },
+                        { ...DEFAULT_CONFIGS[1], name: "AI Bot" }
+                    ];
+                } else if (mode === '2PLAYER') {
+                    aiContainer.style.display = 'none';
+                    gridContainer.style.display = 'block';
+                    document.getElementById('setup-title').textContent = "2 PLAYER SETUP";
+                    app.localPlayers = [
+                        { ...DEFAULT_CONFIGS[0], name: "Player 1" },
+                        { ...DEFAULT_CONFIGS[1], name: "Player 2" }
+                    ];
+                } else if (mode === '3PLAYER') {
+                    aiContainer.style.display = 'none';
+                    gridContainer.style.display = 'block';
+                    document.getElementById('setup-title').textContent = "3 PLAYER SETUP";
+                    app.localPlayers = [
+                        { ...DEFAULT_CONFIGS[0], name: "Player 1" },
+                        { ...DEFAULT_CONFIGS[1], name: "Player 2" },
+                        { ...DEFAULT_CONFIGS[2], name: "Player 3" }
+                    ];
+                } else { // 4PLAYER
+                    aiContainer.style.display = 'none';
+                    gridContainer.style.display = 'none';
+                    app.gridSize = 5;
+                    document.getElementById('setup-title').textContent = "4 PLAYER ROYALE SETUP";
+                    app.localPlayers = DEFAULT_CONFIGS.map(c => ({ ...c }));
+                }
+
+                app.localPlayers.forEach((p, i) => {
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.alignItems = 'center';
+                    row.style.gap = '8px';
+                    row.style.marginBottom = '8px';
+                    row.innerHTML = `
+                        <div class="player-color-badge" id="badge-p-${i}" style="background:${p.color}; color:#FFF;">${p.symbol}</div>
+                        <input type="text" id="input-p-${i}" class="wood-input" value="${p.name}" maxlength="12" placeholder="Name">
+                        <input type="text" id="symbol-p-${i}" class="wood-input symbol-input" value="${p.symbol}" maxlength="2" placeholder="Sym" oninput="app.updateSymbolBadge(${i})">
+                    `;
+                    container.appendChild(row);
+                });
+
+                app.nav.show('screen-setup');
+            },
+
+            updateSymbolBadge(idx) {
+                const symInput = document.getElementById(`symbol-p-${idx}`);
+                const badge = document.getElementById(`badge-p-${idx}`);
+                if (symInput && badge) badge.textContent = symInput.value.trim() || DEFAULT_CONFIGS[idx].symbol;
+            },
+
+            loadStats() {
+                const saved = localStorage.getItem('ttt_royale_stats');
+                if (saved) {
+                    try { app.stats = JSON.parse(saved); app.updateStatsUI(); } catch(e){}
+                }
+            },
+
+            saveStats() {
+                localStorage.setItem('ttt_royale_stats', JSON.stringify(app.stats));
+                app.updateStatsUI();
+            },
+
+            updateStatsUI() {
+                document.getElementById('stat-total').textContent = app.stats.total;
+                document.getElementById('stat-p1').textContent = app.stats.p1Wins;
+                document.getElementById('stat-p2').textContent = app.stats.p2Wins;
+                document.getElementById('stat-draws').textContent = app.stats.draws;
+                document.getElementById('stat-streak').textContent = app.stats.streak;
+            },
+
+            resetStats() {
+                app.stats = { total: 0, p1Wins: 0, p2Wins: 0, draws: 0, streak: 0 };
+                app.saveStats();
+                app.toast("Stats reset successfully!");
+            },
+
+            /* ==========================================================================
+               GAME ENGINE LOGIC
+               ========================================================================== */
+            game: {
+                board: [],
+                moveHistory: [],
+                currentPlayerIdx: 0,
+                isGameOver: false,
+                winConditionCount: 3,
+
+                startLocal() {
+                    app.localPlayers.forEach((p, idx) => {
+                        const nameIn = document.getElementById(`input-p-${idx}`);
+                        const symIn = document.getElementById(`symbol-p-${idx}`);
+                        if (nameIn) p.name = nameIn.value.trim() || p.name;
+                        if (symIn) p.symbol = symIn.value.trim() || p.symbol;
+                    });
+
+                    this.winConditionCount = (app.gridSize >= 4) ? 4 : 3;
+                    this.resetBoardUI();
+                    this.resetState();
+                    
+                    document.getElementById('powerups-wrapper').style.display = app.powerUpsEnabled ? 'flex' : 'none';
+                    app.nav.show('screen-game');
+                },
+
+                resetBoardUI() {
+                    const boardEl = document.getElementById('board');
+                    boardEl.innerHTML = '';
+                    boardEl.className = `board-container grid-${app.gridSize}x${app.gridSize}`;
+                    
+                    const totalCells = app.gridSize * app.gridSize;
+                    this.board = Array(totalCells).fill(null);
+
+                    for (let i = 0; i < totalCells; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'board-cell';
+                        cell.dataset.index = i;
+                        cell.addEventListener('click', () => app.game.handleCellClick(i));
+                        boardEl.appendChild(cell);
+                    }
+
+                    document.getElementById('game-mode-tag').textContent = `${app.gridSize}x${app.gridSize} ${app.mode.replace('_', ' ')}`;
+                },
+
+                resetState() {
+                    this.board = Array(app.gridSize * app.gridSize).fill(null);
+                    this.moveHistory = [];
+                    this.currentPlayerIdx = 0;
+                    this.isGameOver = false;
+                    app.activePowerUp = null;
+                    this.renderBoard();
+                    this.updateUI();
+                    document.getElementById('winner-overlay').classList.remove('active');
+                },
+
+                handleCellClick(index) {
+                    if (this.isGameOver) return;
+                    if (app.mode === 'VS_AI' && this.currentPlayerIdx === 1) return;
+
+                    if (app.activePowerUp === 'BOMB') {
+                        if (this.board[index] !== null) {
+                            app.sound('powerup');
+                            this.board[index] = null;
+                            app.activePowerUp = null;
+                            document.querySelectorAll('.btn-powerup').forEach(b => b.classList.remove('selected'));
+                            this.renderBoard();
+                            app.toast("💣 Cell blasted empty!");
+                            return;
+                        }
+                    }
+
+                    if (this.board[index] !== null) return;
+
+                    app.sound('click');
+                    this.makeMove(index, this.currentPlayerIdx);
+
+                    if (!this.isGameOver && app.mode === 'VS_AI' && this.currentPlayerIdx === 1) {
+                        setTimeout(() => this.triggerAIMove(), 400);
+                    }
+                },
+
+                selectPowerUp(type, btn) {
+                    if (app.activePowerUp === type) {
+                        app.activePowerUp = null;
+                        btn.classList.remove('selected');
+                    } else {
+                        app.activePowerUp = type;
+                        document.querySelectorAll('.btn-powerup').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        app.toast(`Select a cell to apply ${type}!`);
+                    }
+                },
+
+                makeMove(index, playerIdx) {
+                    this.moveHistory.push({ index, playerIdx, previousState: [...this.board] });
+                    this.board[index] = playerIdx;
+                    this.renderBoard();
+
+                    const winResult = this.checkWin();
+                    if (winResult) {
+                        this.isGameOver = true;
+                        this.highlightWinningCells(winResult.winningCells);
+                        app.sound('win');
+                        const winner = app.localPlayers[winResult.playerIdx];
+
+                        app.stats.total++;
+                        if (winResult.playerIdx === 0) { app.stats.p1Wins++; app.stats.streak++; }
+                        else if (winResult.playerIdx === 1) { app.stats.p2Wins++; app.stats.streak = 0; }
+                        app.saveStats();
+
+                        setTimeout(() => this.showWinnerModal(winner, `${this.winConditionCount} IN A ROW!`), 400);
+                        return;
+                    }
+
+                    if (this.board.every(cell => cell !== null)) {
+                        this.isGameOver = true;
+                        app.stats.total++;
+                        app.stats.draws++;
+                        app.saveStats();
+                        setTimeout(() => this.showWinnerModal(null, "DRAW GAME!"), 300);
+                        return;
+                    }
+
+                    this.currentPlayerIdx = (this.currentPlayerIdx + 1) % app.localPlayers.length;
+                    this.updateUI();
+                },
+
+                undoMove() {
+                    if (this.moveHistory.length === 0 || this.isGameOver) return;
+                    const lastMove = this.moveHistory.pop();
+                    this.board = lastMove.previousState;
+                    this.currentPlayerIdx = lastMove.playerIdx;
+                    this.renderBoard();
+                    this.updateUI();
+                    app.toast("Undo performed!");
+                },
+
+                /* AI ENGINE LOGIC */
+                triggerAIMove() {
+                    let bestIndex = -1;
+                    const emptyIndices = this.board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+                    if (app.aiDifficulty === 'EASY') {
+                        bestIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                    } else if (app.aiDifficulty === 'MEDIUM') {
+                        bestIndex = this.findWinningMove(1) ?? this.findWinningMove(0) ?? emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                    } else if (app.aiDifficulty === 'HARD') {
+                        if (app.gridSize === 3) bestIndex = this.minimax(this.board, 1).index;
+                        else bestIndex = this.findWinningMove(1) ?? this.findWinningMove(0) ?? emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                    }
+
+                    if (bestIndex !== -1 && bestIndex !== undefined) {
+                        app.sound('click');
+                        this.makeMove(bestIndex, 1);
+                    }
+                },
+
+                findWinningMove(playerIdx) {
+                    for (let i = 0; i < this.board.length; i++) {
+                        if (this.board[i] === null) {
+                            this.board[i] = playerIdx;
+                            const win = this.checkWin();
+                            this.board[i] = null;
+                            if (win && win.playerIdx === playerIdx) return i;
+                        }
+                    }
+                    return null;
+                },
+
+                minimax(newBoard, player) {
+                    const availSpots = newBoard.map((v, i) => v === null ? i : null).filter(v => v !== null);
+                    const win = this.checkWinOnBoard(newBoard);
+
+                    if (win && win.playerIdx === 0) return { score: -10 };
+                    if (win && win.playerIdx === 1) return { score: 10 };
+                    if (availSpots.length === 0) return { score: 0 };
+
+                    const moves = [];
+                    for (let i = 0; i < availSpots.length; i++) {
+                        const move = {};
+                        move.index = availSpots[i];
+                        newBoard[availSpots[i]] = player;
+
+                        if (player === 1) {
+                            const result = this.minimax(newBoard, 0);
+                            move.score = result.score;
+                        } else {
+                            const result = this.minimax(newBoard, 1);
+                            move.score = result.score;
+                        }
+
+                        newBoard[availSpots[i]] = null;
+                        moves.push(move);
+                    }
+
+                    let bestMove;
+                    if (player === 1) {
+                        let bestScore = -10000;
+                        for (let i = 0; i < moves.length; i++) {
+                            if (moves[i].score > bestScore) {
+                                bestScore = moves[i].score;
+                                bestMove = i;
+                            }
+                        }
+                    } else {
+                        let bestScore = 10000;
+                        for (let i = 0; i < moves.length; i++) {
+                            if (moves[i].score < bestScore) {
+                                bestScore = moves[i].score;
+                                bestMove = i;
+                            }
+                        }
+                    }
+
+                    return moves[bestMove];
+                },
+
+                checkWin() { return this.checkWinOnBoard(this.board); },
+
+                checkWinOnBoard(bd) {
+                    const N = app.gridSize;
+                    const req = this.winConditionCount;
+                    const grid = [];
+                    for (let r = 0; r < N; r++) grid.push(bd.slice(r * N, (r + 1) * N));
+
+                    const directions = [
+                        { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 1, c: 1 }, { r: 1, c: -1 }
+                    ];
+
+                    for (let r = 0; r < N; r++) {
+                        for (let c = 0; c < N; c++) {
+                            const p = grid[r][c];
+                            if (p === null) continue;
+
+                            for (let d of directions) {
+                                let winningCells = [r * N + c];
+                                for (let step = 1; step < req; step++) {
+                                    const nr = r + d.r * step;
+                                    const nc = c + d.c * step;
+                                    if (nr >= 0 && nr < N && nc >= 0 && nc < N && grid[nr][nc] === p) {
+                                        winningCells.push(nr * N + nc);
+                                    } else { break; }
+                                }
+                                if (winningCells.length === req) {
+                                    return { playerIdx: p, winningCells };
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                },
+
+                renderBoard() {
+                    const cells = document.querySelectorAll('.board-cell');
+                    cells.forEach((cell, idx) => {
+                        const val = this.board[idx];
+                        cell.classList.remove('winning-cell');
+                        if (val !== null && val !== undefined) {
+                            const player = app.localPlayers[val];
+                            cell.textContent = player ? player.symbol : '';
+                            cell.style.color = player ? player.color : 'inherit';
+                        } else {
+                            cell.textContent = '';
+                        }
+                    });
+                },
+
+                highlightWinningCells(cellsArray) {
+                    const cells = document.querySelectorAll('.board-cell');
+                    cellsArray.forEach(idx => {
+                        if (cells[idx]) cells[idx].classList.add('winning-cell');
+                    });
+                },
+
+                updateUI() {
+                    const currPlayer = app.localPlayers[this.currentPlayerIdx];
+                    if (!currPlayer) return;
+
+                    const badge = document.getElementById('turn-badge');
+                    badge.style.background = currPlayer.color;
+                    badge.textContent = currPlayer.symbol;
+                    document.getElementById('turn-text').textContent = `${currPlayer.name}'s Turn`;
+                    document.getElementById('move-counter').textContent = `Moves: ${this.moveHistory.length}`;
+
+                    const summary = document.getElementById('players-summary');
+                    summary.innerHTML = '';
+                    app.localPlayers.forEach((p, i) => {
+                        const item = document.createElement('div');
+                        item.className = `player-summary-item ${i === this.currentPlayerIdx ? 'active-turn' : ''}`;
+                        item.innerHTML = `
+                            <div style="color:${p.color}; font-weight:800; font-size:1rem;">${p.symbol}</div>
+                            <div style="color:${p.color}">${p.name}</div>
+                        `;
+                        summary.appendChild(item);
+                    });
+                },
+
+                showWinnerModal(winner, subtitle) {
+                    const overlay = document.getElementById('winner-overlay');
+                    const titleEl = document.getElementById('winner-title');
+                    const subtitleEl = document.getElementById('winner-subtitle');
+                    const iconEl = document.getElementById('winner-icon');
+
+                    if (winner) {
+                        iconEl.textContent = "👑";
+                        titleEl.textContent = `${winner.name.toUpperCase()} WINS!`;
+                        titleEl.style.color = winner.color;
+                        subtitleEl.textContent = subtitle;
+                    } else {
+                        iconEl.textContent = "🤝";
+                        titleEl.textContent = "DRAW GAME";
+                        titleEl.style.color = "var(--gold-light)";
+                        subtitleEl.textContent = "No winner this round.";
+                    }
+
+                    overlay.classList.add('active');
+                },
+
+                restart() { this.resetState(); }
+            }
+        };
+
+        window.app = app;
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+
+  <script>
+    /* ============================================================
+       PWA SERVICE WORKER REGISTRATION
+       ============================================================ */
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("./sw.js")
+                .then((registration) => {
+                    console.log(
+                        "✅ PWA Service Worker registered:",
+                        registration.scope
+                    );
+                })
+                .catch((error) => {
+                    console.error(
+                        "❌ PWA Service Worker registration failed:",
+                        error
+                    );
+                });
+        });
+    }
+  </script>
+  
+</body>
+</html>
